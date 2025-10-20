@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ae.Domain", "Ae.Domain\Ae.D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ae.Service", "Ae.Service\Ae.Service.csproj", "{BE3BE22E-95DE-4FA9-905A-81D6C51C32FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ae.Test", "Ae.Test\Ae.Test.csproj", "{D680B81A-DC15-4BDB-8C10-F82C8CD32717}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{BE3BE22E-95DE-4FA9-905A-81D6C51C32FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE3BE22E-95DE-4FA9-905A-81D6C51C32FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE3BE22E-95DE-4FA9-905A-81D6C51C32FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D680B81A-DC15-4BDB-8C10-F82C8CD32717}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D680B81A-DC15-4BDB-8C10-F82C8CD32717}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D680B81A-DC15-4BDB-8C10-F82C8CD32717}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D680B81A-DC15-4BDB-8C10-F82C8CD32717}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

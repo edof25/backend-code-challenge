@@ -1,7 +1,11 @@
 using System.Text;
 using Ae.Domain.Configuration;
+using Ae.Domain.Validators.Auth;
 using Ae.Infrastructure;
+using Ae.Infrastructure.Validators.User;
 using Ae.Service;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -35,6 +39,12 @@ builder.Services.AddAuthentication(options =>
 // Add services to the container.
 builder.Services.AddInfrastructures();
 builder.Services.AddServices();
+
+// Add FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>(); // Ae.Domain validators
+builder.Services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>(); // Ae.Infrastructure validators
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
