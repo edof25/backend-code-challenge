@@ -23,6 +23,7 @@ BEGIN
 
     INSERT INTO dbo.Users (
         RoleId,
+        CrewMemberId,
         Username,
         Password,
         FirstName,
@@ -35,6 +36,7 @@ BEGIN
     )
     VALUES (
         @RoleId,
+        @CrewMemberId,
         @Username,
         @Password,
         @FirstName,

@@ -1,4 +1,5 @@
 using System.Text;
+using Ae.Api.Services;
 using Ae.Domain.Configuration;
 using Ae.Domain.Validators.Auth;
 using Ae.Infrastructure;
@@ -40,11 +41,13 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddInfrastructures();
 builder.Services.AddServices();
 
-// Add FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddFluentValidationClientsideAdapters();
+// Add FluentValidation - NOTE: Automatic validation disabled due to async validators
+// Validators will be manually invoked via ValidationService to support async validation
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>(); // Ae.Domain validators
 builder.Services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>(); // Ae.Infrastructure validators
+
+// Register ValidationService
+builder.Services.AddScoped<IValidationService, ValidationService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

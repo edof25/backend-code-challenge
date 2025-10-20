@@ -34,6 +34,8 @@ public class ShipRepository : IShipRepository
                 new
                 {
                     request.SearchTerm,
+                    request.SortBy,
+                    request.SortOrder,
                     request.PageNumber,
                     request.PageSize
                 },
@@ -134,7 +136,7 @@ public class ShipRepository : IShipRepository
         {
             using var connection = _connectionFactory.CreateConnection();
 
-            var result = await connection.QueryFirstAsync<ShipResult>(
+            using var multi = await connection.QueryMultipleAsync(
                 "dbo.Ship_Create",
                 new
                 {
@@ -145,6 +147,10 @@ public class ShipRepository : IShipRepository
                 },
                 commandType: CommandType.StoredProcedure
             );
+
+            await multi.ReadFirstAsync<int>();
+
+            var result = await multi.ReadFirstOrDefaultAsync<ShipResult>();
 
             return result.Adapt<Ship>();
         }
@@ -162,7 +168,7 @@ public class ShipRepository : IShipRepository
         {
             using var connection = _connectionFactory.CreateConnection();
 
-            var result = await connection.QueryFirstAsync<ShipResult>(
+            using var multi = await connection.QueryMultipleAsync(
                 "dbo.Ship_Update",
                 new
                 {
@@ -174,6 +180,10 @@ public class ShipRepository : IShipRepository
                 },
                 commandType: CommandType.StoredProcedure
             );
+
+            await multi.ReadFirstAsync<int>();
+
+            var result = await multi.ReadFirstOrDefaultAsync<ShipResult>();
 
             return result.Adapt<Ship>();
         }

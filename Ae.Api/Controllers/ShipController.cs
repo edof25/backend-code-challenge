@@ -22,20 +22,29 @@ public class ShipController : BaseController
     }
 
     /// <summary>
-    /// Get all ships with pagination and search
+    /// Get all ships with pagination, sorting, and search
     /// </summary>
     /// <param name="pageNumber">Page number (default: 1)</param>
     /// <param name="pageSize">Page size (default: 10, max: 100)</param>
     /// <param name="searchTerm">Search term to filter by ship code, name, or fiscal year</param>
+    /// <param name="sortBy">Sort by column: Code, Name, FiscalYear, CreatedAt</param>
+    /// <param name="sortOrder">Sort order: ASC or DESC (default: ASC)</param>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<ShipResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchTerm = null)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortOrder = "ASC")
     {
         var request = new PaginationRequest
         {
             PageNumber = pageNumber,
             PageSize = pageSize,
-            SearchTerm = searchTerm
+            SearchTerm = searchTerm,
+            SortBy = sortBy,
+            SortOrder = sortOrder ?? "ASC"
         };
 
         var pagedResult = await _shipService.GetAllShipsAsync(request);
@@ -90,14 +99,35 @@ public class ShipController : BaseController
     }
 
     /// <summary>
-    /// Get users assigned to a ship
+    /// Get users assigned to a ship with pagination, sorting, and searching
     /// </summary>
+    /// <param name="shipId">Ship ID</param>
+    /// <param name="pageNumber">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10, max: 100)</param>
+    /// <param name="searchTerm">Search term to filter by rank name, crew ID, first/last name, nationality, or sign-on date (e.g., "05 Apr")</param>
+    /// <param name="sortBy">Sort by column: RankName, CrewMemberId, FirstName, LastName, Age, Nationality, SignOnDate</param>
+    /// <param name="sortOrder">Sort order: ASC or DESC (default: ASC)</param>
     [HttpGet("{shipId}/crew")]
-    [ProducesResponseType(typeof(IEnumerable<UserShipResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetUsersByShipId(int shipId)
+    [ProducesResponseType(typeof(PagedResult<UserShipResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUsersByShipId(
+        int shipId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortOrder = "ASC")
     {
-        var users = await _userShipService.GetUsersByShipIdAsync(shipId);
-        return Ok(users);
+        var request = new PaginationRequest
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            SearchTerm = searchTerm,
+            SortBy = sortBy,
+            SortOrder = sortOrder ?? "ASC"
+        };
+
+        var pagedResult = await _userShipService.GetUsersByShipIdAsync(shipId, request);
+        return Ok(pagedResult);
     }
 
     /// <summary>
@@ -108,6 +138,10 @@ public class ShipController : BaseController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateShipRequest request)
     {
+        // Validate request
+        var validationError = await ValidateAsync(request);
+        if (validationError != null) return validationError;
+
         try
         {
             var createdBy = GetCurrentUsername();
@@ -130,6 +164,10 @@ public class ShipController : BaseController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateShipRequest request)
     {
+        // Validate request
+        var validationError = await ValidateAsync(request);
+        if (validationError != null) return validationError;
+
         try
         {
             var updatedBy = GetCurrentUsername();
@@ -178,6 +216,10 @@ public class ShipController : BaseController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AssignShipToUser([FromBody] AssignShipToUserRequest request)
     {
+        // Validate request
+        var validationError = await ValidateAsync(request);
+        if (validationError != null) return validationError;
+
         try
         {
             var createdBy = GetCurrentUsername();

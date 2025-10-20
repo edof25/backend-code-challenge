@@ -1,4 +1,5 @@
 using System.Data;
+using Ae.Domain.DTOs.Common;
 using Ae.Domain.Entities;
 using Ae.Infrastructure.Data;
 using Ae.Infrastructure.Interfaces;
@@ -43,23 +44,35 @@ public class UserShipRepository : IUserShipRepository
         }
     }
 
-    public async Task<IEnumerable<CrewServiceHistory>> GetUsersByShipIdAsync(int shipId)
+    public async Task<(IEnumerable<CrewServiceHistory> CrewServiceHistories, int TotalCount)> GetUsersByShipIdAsync(int shipId, PaginationRequest request)
     {
         try
         {
             using var connection = _connectionFactory.CreateConnection();
 
-            var result = await connection.QueryAsync<UserShipResult>(
+            using var multi = await connection.QueryMultipleAsync(
                 "dbo.CrewServiceHistory_Get",
-                new { ShipId = shipId },
+                new
+                {
+                    ShipId = shipId,
+                    request.SearchTerm,
+                    request.SortBy,
+                    request.SortOrder,
+                    request.PageNumber,
+                    request.PageSize
+                },
                 commandType: CommandType.StoredProcedure
             );
 
-            return result.Select(r => r.Adapt<CrewServiceHistory>());
+            var totalCount = await multi.ReadFirstAsync<int>();
+            var results = await multi.ReadAsync<UserShipResult>();
+
+            return (results.Select(r => r.Adapt<CrewServiceHistory>()), totalCount);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in GetUsersByShipIdAsync - ShipId: {ShipId}", shipId);
+            _logger.LogError(ex, "Error in GetUsersByShipIdAsync - ShipId: {ShipId}, PageNumber: {PageNumber}, PageSize: {PageSize}",
+                shipId, request.PageNumber, request.PageSize);
             throw;
         }
     }
@@ -70,11 +83,15 @@ public class UserShipRepository : IUserShipRepository
         {
             using var connection = _connectionFactory.CreateConnection();
 
-            var result = await connection.QueryFirstOrDefaultAsync<UserShipResult>(
+            using var multi = await connection.QueryMultipleAsync(
                 "dbo.CrewServiceHistory_Get",
                 new { Id = id },
                 commandType: CommandType.StoredProcedure
             );
+
+            await multi.ReadFirstAsync<int>();
+
+            var result = await multi.ReadFirstOrDefaultAsync<UserShipResult>();
 
             return result?.Adapt<CrewServiceHistory>();
         }
@@ -91,7 +108,7 @@ public class UserShipRepository : IUserShipRepository
         {
             using var connection = _connectionFactory.CreateConnection();
 
-            var result = await connection.QueryFirstAsync<UserShipResult>(
+            using var multi = await connection.QueryMultipleAsync(
                 "dbo.CrewServiceHistory_Create",
                 new
                 {
@@ -105,6 +122,10 @@ public class UserShipRepository : IUserShipRepository
                 },
                 commandType: CommandType.StoredProcedure
             );
+
+            await multi.ReadFirstAsync<int>();
+
+            var result = await multi.ReadFirstOrDefaultAsync<UserShipResult>();
 
             return result.Adapt<CrewServiceHistory>();
         }

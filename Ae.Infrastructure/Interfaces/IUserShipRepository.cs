@@ -1,3 +1,4 @@
+using Ae.Domain.DTOs.Common;
 using Ae.Domain.Entities;
 
 namespace Ae.Infrastructure.Interfaces;
@@ -5,7 +6,7 @@ namespace Ae.Infrastructure.Interfaces;
 public interface IUserShipRepository
 {
     Task<IEnumerable<CrewServiceHistory>> GetShipsByUserIdAsync(int userId);
-    Task<IEnumerable<CrewServiceHistory>> GetUsersByShipIdAsync(int shipId);
+    Task<(IEnumerable<CrewServiceHistory> CrewServiceHistories, int TotalCount)> GetUsersByShipIdAsync(int shipId, PaginationRequest request);
     Task<CrewServiceHistory?> GetByIdAsync(int id);
     Task<CrewServiceHistory> AssignShipToUserAsync(int userId, int shipId, byte rankId, DateTime signOnDate, DateTime endOfContractDate, DateTime? signOffDate, string createdBy);
     Task<bool> UnassignShipFromUserAsync(int userId, int shipId, string deletedBy);

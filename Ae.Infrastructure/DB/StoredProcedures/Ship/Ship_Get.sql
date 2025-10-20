@@ -3,11 +3,17 @@ CREATE OR ALTER PROCEDURE dbo.Ship_Get
     @Code NVARCHAR(50) = NULL,
     @UserId INT = NULL,
     @SearchTerm NVARCHAR(255) = NULL,
+    @SortBy NVARCHAR(50) = NULL,
+    @SortOrder NVARCHAR(4) = 'ASC',
     @PageNumber INT = 1,
     @PageSize INT = 10
 AS
 BEGIN
     SET NOCOUNT ON;
+
+    -- Set default sort order if not provided or invalid
+    IF @SortOrder IS NULL OR @SortOrder NOT IN ('ASC', 'DESC')
+        SET @SortOrder = 'ASC';
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
@@ -35,7 +41,7 @@ BEGIN
             OR CAST(s.FiscalYear AS NVARCHAR) LIKE '%' + @SearchTerm + '%'
         );
 
-    -- Get paged results
+    -- Get paged results with dynamic sorting
     SELECT
         s.Id,
         s.Code,
@@ -70,7 +76,16 @@ BEGIN
             OR s.Name LIKE '%' + @SearchTerm + '%'
             OR CAST(s.FiscalYear AS NVARCHAR) LIKE '%' + @SearchTerm + '%'
         )
-    ORDER BY s.CreatedAt DESC
+    ORDER BY
+        CASE WHEN @SortBy = 'Code' AND @SortOrder = 'ASC' THEN s.Code END ASC,
+        CASE WHEN @SortBy = 'Code' AND @SortOrder = 'DESC' THEN s.Code END DESC,
+        CASE WHEN @SortBy = 'Name' AND @SortOrder = 'ASC' THEN s.Name END ASC,
+        CASE WHEN @SortBy = 'Name' AND @SortOrder = 'DESC' THEN s.Name END DESC,
+        CASE WHEN @SortBy = 'FiscalYear' AND @SortOrder = 'ASC' THEN s.FiscalYear END ASC,
+        CASE WHEN @SortBy = 'FiscalYear' AND @SortOrder = 'DESC' THEN s.FiscalYear END DESC,
+        CASE WHEN @SortBy = 'CreatedAt' AND @SortOrder = 'ASC' THEN s.CreatedAt END ASC,
+        CASE WHEN @SortBy = 'CreatedAt' AND @SortOrder = 'DESC' THEN s.CreatedAt END DESC,
+        CASE WHEN @SortBy IS NULL THEN s.CreatedAt END DESC -- Default sort
     OFFSET @Offset ROWS
     FETCH NEXT @PageSize ROWS ONLY;
 END

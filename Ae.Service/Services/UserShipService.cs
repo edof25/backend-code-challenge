@@ -1,3 +1,4 @@
+using Ae.Domain.DTOs.Common;
 using Ae.Domain.DTOs.UserShip;
 using Ae.Infrastructure.Interfaces;
 using Ae.Service.Interfaces;
@@ -33,16 +34,26 @@ public class UserShipService : IUserShipService
         }
     }
 
-    public async Task<IEnumerable<UserShipResponse>> GetUsersByShipIdAsync(int shipId)
+    public async Task<PagedResult<UserShipResponse>> GetUsersByShipIdAsync(int shipId, PaginationRequest request)
     {
         try
         {
-            var crewServiceHistories = await _userShipRepository.GetUsersByShipIdAsync(shipId);
-            return crewServiceHistories.Select(us => us.Adapt<UserShipResponse>()).ToList();
+            var (crewServiceHistories, totalCount) = await _userShipRepository.GetUsersByShipIdAsync(shipId, request);
+
+            var userShipResponses = crewServiceHistories.Select(us => us.Adapt<UserShipResponse>()).ToList();
+
+            return new PagedResult<UserShipResponse>
+            {
+                Items = userShipResponses,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount
+            };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in GetUsersByShipIdAsync - ShipId: {ShipId}", shipId);
+            _logger.LogError(ex, "Error in GetUsersByShipIdAsync - ShipId: {ShipId}, PageNumber: {PageNumber}, PageSize: {PageSize}",
+                shipId, request.PageNumber, request.PageSize);
             throw;
         }
     }

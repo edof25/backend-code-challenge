@@ -1,5 +1,6 @@
 CREATE OR ALTER PROCEDURE dbo.User_Update
     @Id INT,
+    @CrewMemberId NVARCHAR(100) = NULL,
     @RoleId TINYINT,
     @Username NVARCHAR(255),
     @FirstName NVARCHAR(100),
@@ -27,6 +28,7 @@ BEGIN
 
     UPDATE dbo.Users
     SET
+        CrewMemberId = @CrewMemberId,
         RoleId = @RoleId,
         Username = @Username,
         FirstName = @FirstName,

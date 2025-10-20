@@ -27,6 +27,10 @@ public class UserController : BaseController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        // Validate request
+        var validationError = await ValidateAsync(request);
+        if (validationError != null) return validationError;
+
         var response = await _userService.LoginAsync(request);
 
         if (response == null)
@@ -38,20 +42,29 @@ public class UserController : BaseController
     }
 
     /// <summary>
-    /// Get all users with pagination and search
+    /// Get all users with pagination, sorting, and search
     /// </summary>
     /// <param name="pageNumber">Page number (default: 1)</param>
     /// <param name="pageSize">Page size (default: 10, max: 100)</param>
     /// <param name="searchTerm">Search term to filter by username, first name, last name, or nationality</param>
+    /// <param name="sortBy">Sort by column: Username, FirstName, LastName, RoleName, Nationality, BirthDate, CreatedAt</param>
+    /// <param name="sortOrder">Sort order: ASC or DESC (default: ASC)</param>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<UserResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchTerm = null)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortOrder = "ASC")
     {
         var request = new PaginationRequest
         {
             PageNumber = pageNumber,
             PageSize = pageSize,
-            SearchTerm = searchTerm
+            SearchTerm = searchTerm,
+            SortBy = sortBy,
+            SortOrder = sortOrder ?? "ASC"
         };
 
         var pagedResult = await _userService.GetAllUsersAsync(request);
@@ -84,6 +97,10 @@ public class UserController : BaseController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
     {
+        // Validate request
+        var validationError = await ValidateAsync(request);
+        if (validationError != null) return validationError;
+
         try
         {
             var createdBy = GetCurrentUsername();
@@ -106,6 +123,10 @@ public class UserController : BaseController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserRequest request)
     {
+        // Validate request
+        var validationError = await ValidateAsync(request);
+        if (validationError != null) return validationError;
+
         try
         {
             var updatedBy = GetCurrentUsername();
@@ -129,6 +150,10 @@ public class UserController : BaseController
     [AllowAnonymous]
     public async Task<IActionResult> UpdatePassword(int id, [FromBody] UpdatePasswordRequest request)
     {
+        // Validate request
+        var validationError = await ValidateAsync(request);
+        if (validationError != null) return validationError;
+
         try
         {
             var updatedBy = GetCurrentUsername();

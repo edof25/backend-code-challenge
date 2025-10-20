@@ -33,9 +33,11 @@ public class UserRepository : IUserRepository
                 "dbo.User_Get",
                 new
                 {
-                    SearchTerm = request.SearchTerm,
-                    PageNumber = request.PageNumber,
-                    PageSize = request.PageSize
+                    request.SearchTerm,
+                    request.SortBy,
+                    request.SortOrder,
+                    request.PageNumber,
+                    request.PageSize
                 },
                 commandType: CommandType.StoredProcedure
             );
@@ -109,12 +111,12 @@ public class UserRepository : IUserRepository
         {
             using var connection = _connectionFactory.CreateConnection();
 
-            var result = await connection.QueryFirstAsync<UserResult>(
+            using var multi = await connection.QueryMultipleAsync(
                 "dbo.User_Create",
                 new
                 {
-                    user.CrewMemberId,
                     user.RoleId,
+                    user.CrewMemberId,
                     user.Username,
                     user.Password,
                     user.FirstName,
@@ -125,6 +127,10 @@ public class UserRepository : IUserRepository
                 },
                 commandType: CommandType.StoredProcedure
             );
+
+            await multi.ReadFirstAsync<int>();
+
+            var result = await multi.ReadFirstOrDefaultAsync<UserResult>();
 
             return result.Adapt<User>();
         }
@@ -142,7 +148,7 @@ public class UserRepository : IUserRepository
         {
             using var connection = _connectionFactory.CreateConnection();
 
-            var result = await connection.QueryFirstAsync<UserResult>(
+            using var multi = await connection.QueryMultipleAsync(
                 "dbo.User_Update",
                 new
                 {
@@ -158,6 +164,10 @@ public class UserRepository : IUserRepository
                 },
                 commandType: CommandType.StoredProcedure
             );
+
+            await multi.ReadFirstAsync<int>();
+
+            var result = await multi.ReadFirstOrDefaultAsync<UserResult>();
 
             return result.Adapt<User>();
         }
