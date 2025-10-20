@@ -232,3 +232,133 @@ If you have any questions or need clarifications, feel free to contact us by e-m
 
 [^1]: Reference for crew ranks: [https://nedcon.ro/crew-structure-on-board-merchant-ships-deck-department/](https://nedcon.ro/crew-structure-on-board-merchant-ships-deck-department/ )
 [^2]: Reference for chart of accounts: [https://www.gocivilairpatrol.com/media/cms/R173_001_CoA_3918FC7AF372F.pdf](https://www.gocivilairpatrol.com/media/cms/R173_001_CoA_3918FC7AF372F.pdf)
+
+
+---
+
+
+## Clean Architecture
+To create more maintanable, testable and scalable application. Each layers or components will have a clear responsibility.
+- **Domain Layer**: Contains DTOs, validators, and business models
+- **Service Layer**: Business logic and orchestration
+- **Infrastructure Layer**: Data access, repositories, and database interactions
+- **API Layer**: REST endpoints and request handling
+- **Test Layer**: Unit tests for business logic
+
+## Technology Stack
+
+- **.NET 8**
+- **SQL Server**
+- **Dapper**: Micro-ORM for data access
+- **JWT Authentication**: Secure token-based authentication
+- **FluentValidation**: Validation framework
+- **Mapster**: Object mapper
+- **Swagger/OpenAPI**: API documentation and testing interface
+- **xUnit**: Unit testing framework
+- **BCrypt**: Password hashing for secure credential storage
+
+## Database Design
+
+### Schema Overview
+The database schema includes the following main entities:
+
+- **Users**
+- **Ships**
+- **CrewServiceHistories**
+- **Ranks** (Master, Chief Engineer, Chief Officer, etc.)
+- **ChartOfAccounts**
+- **Budgets**
+- **AccountTransactions**
+- **Roles** (Administrator, Staff)
+- **RecordStatus** (Active, Inactive, Deleted)
+- **AccountTypes** (Summary, Detail)
+
+### Database Scripts Location
+- **DDL & Sample Data**: [Ae.Infrastructure/DB/ddl.sql](Ae.Infrastructure/DB/ddl.sql)
+- **Stored Procedures**: [Ae.Infrastructure/DB/StoredProcedures/](Ae.Infrastructure/DB/StoredProcedures/)
+
+## Setup & Installation
+
+### 1. Setup Database
+
+#### Using SSMS 
+1. Connect to your SQL Server instance
+2. Create a new database:
+3. Open and execute the DDL script: [Ae.Infrastructure/DB/ddl.sql](Ae.Infrastructure/DB/ddl.sql)
+   - This will create all tables, relationships, and insert sample data
+4. Execute all stored procedure scripts from [Ae.Infrastructure/DB/StoredProcedures/](Ae.Infrastructure/DB/StoredProcedures/)
+   - Or execute them individually from each subfolder (User, Ship, CrewServiceHistory, FinancialReport)
+
+### 3. Configure Connection String
+Update the connection string in [Ae.Api/appsettings.json](Ae.Api/appsettings.json):
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=ae;User Id=sa;Password=YourPassword;TrustServerCertificate=True;"
+  }
+}
+```
+
+Adjust these values based on your SQL Server configuration.
+
+### 4. Restore NuGet Packages
+```bash
+dotnet restore
+```
+
+### 5. Build the Solution
+```bash
+dotnet build
+```
+
+## Running the Application
+
+### 1. Run the API
+
+```bash
+cd Ae.Api
+dotnet run
+```
+
+The API will start on:
+- HTTP: `http://localhost:5027`
+
+### 2. Access Swagger UI
+Open your browser and navigate to:
+```
+http://localhost:5027/swagger
+```
+
+## Testing
+
+### Run All Tests
+```bash
+dotnet test
+```
+
+## Authentication
+
+### 1. Login to Get JWT Token
+
+**Using Swagger:**
+1. Navigate to Swagger UI: `http://localhost:5027/swagger`
+2. Expand `POST /api/user/login`
+3. Click "Try it out"
+4. Use the default admin credentials:
+   ```json
+   {
+     "username": "admin",
+     "password": "pass123"
+   }
+   ```
+5. Click "Execute"
+6. Copy the `token` from the response
+
+### 2. Use Token for Authenticated Requests
+
+**Using Swagger:**
+1. Click the "Authorize" button (top-right of Swagger UI)
+2. Enter: `<your-token>`
+3. Click "Authorize"
+4. All subsequent requests will include the token
